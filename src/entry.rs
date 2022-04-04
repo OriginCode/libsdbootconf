@@ -36,8 +36,8 @@ impl FromStr for Entry {
             }
 
             let mut parts = line.splitn(2, ' ');
-            let key = parts.next().ok_or(LibSDBootError::ConfigParseError)?;
-            let value = parts.next().ok_or(LibSDBootError::ConfigParseError)?;
+            let key = parts.next().ok_or(LibSDBootError::EntryParseError)?;
+            let value = parts.next().ok_or(LibSDBootError::EntryParseError)?;
 
             entry.tokens.push(match key {
                 "title" => Token::Title(value.to_owned()),
@@ -129,7 +129,7 @@ impl Entry {
     ///     "5.12.0-aosc-main",
     ///     vec![Token::Title("5.12.0-aosc-main".to_string())],
     /// );
-    /// entry.write("/path/to/config").unwrap();
+    /// entry.write("/path/to/entry").unwrap();
     /// ```
     pub fn write(&self, path: impl AsRef<Path>) -> Result<(), LibSDBootError> {
         let dest_path = path.as_ref().join(self.id.as_str());
