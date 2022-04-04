@@ -3,18 +3,10 @@ use std::{fs, path::Path, str::FromStr};
 use crate::LibSDBootError;
 
 /// An abstraction over the configuration file of systemd-boot.
+#[derive(Default, Debug)]
 pub struct Config {
     pub default: String,
     pub timeout: i32,
-}
-
-impl Default for Config {
-    fn default() -> Self {
-        Config {
-            default: String::new(),
-            timeout: 5,
-        }
-    }
 }
 
 impl FromStr for Config {
@@ -51,7 +43,7 @@ impl ToString for Config {
 }
 
 impl Config {
-    /// Create a new Config
+    /// Create a new Config.
     ///
     /// # Examples
     ///
@@ -70,7 +62,7 @@ impl Config {
         }
     }
 
-    /// Load an existing config file
+    /// Load an existing config file.
     ///
     /// # Examples
     ///
@@ -83,7 +75,7 @@ impl Config {
         Config::from_str(&fs::read_to_string(path.as_ref())?)
     }
 
-    /// Save the config to a file
+    /// Save the config to a file.
     ///
     /// # Examples
     ///
