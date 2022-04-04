@@ -1,4 +1,4 @@
-//! This library provides a general purpose configuration library for systemd-boot.
+//! This library provides a general purpose configuration interface for systemd-boot.
 //! It parses systemd-boot configuration and systemd-boot entry configuration.
 
 use thiserror::Error;
