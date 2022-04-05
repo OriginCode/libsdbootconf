@@ -1,21 +1,25 @@
 # libsdbootconf
 
+[![crates.io](https://img.shields.io/crates/v/libsdbootconf.svg)](https://crates.io/crates/libsdbootconf)
+[![docs.rs](https://docs.rs/libsdbootconf/badge.svg)](https://docs.rs/libsdbootconf/)
+[![MIT licensed](https://img.shields.io/crates/l/libsdbootconf.svg)](./LICENSE)
+
 A systemd-boot configuration and boot entry configuration parser library.
 
 ## Usage
 
 ```rust
-use libsdbootconf::{SystemdBootConf, entry::{Entry, Token}};
+use libsdbootconf::{config::ConfigBuilder, entry::EntryBuilder, SystemdBootConfBuilder};
 
-let mut systemd_boot_conf = SystemdBootConf::new("/efi/loader");
-
-systemd_boot_conf.config.default = "5.12.0-aosc-main".to_owned();
-systemd_boot_conf.config.timeout = 5;
-
-systemd_boot_conf.entries.push(Entry::new(
-    "5.12.0-aosc-main",
-    vec![Token::Title("AOSC OS (5.12.0-aosc-main)".to_owned())]
-));
+let systemd_boot_conf = SystemdBootConfBuilder::new("/efi/loader")
+    .config(ConfigBuilder::new()
+        .default("5.12.0-aosc-main")
+        .timeout(5)
+        .build())
+    .entry(EntryBuilder::new("5.12.0-aosc-main")
+        .title("5.12.0-aosc-main")
+        .build())
+    .build();
 
 systemd_boot_conf.write_all().unwrap();
 ```
