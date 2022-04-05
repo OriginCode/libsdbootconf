@@ -6,9 +6,9 @@ use crate::LibSDBootConfError;
 #[derive(Default, Debug)]
 pub struct Config {
     /// Pattern to select the default entry in the list of entries.
-    pub default: String,
+    pub default: Option<String>,
     /// Timeout in seconds for how long to show the menu.
-    pub timeout: i32,
+    pub timeout: Option<i32>,
 }
 
 impl FromStr for Config {
@@ -28,8 +28,8 @@ impl FromStr for Config {
             let value = parts.next().ok_or(LibSDBootConfError::ConfigParseError)?;
 
             match key {
-                "default" => config.default = value.to_string(),
-                "timeout" => config.timeout = value.parse().unwrap_or_default(),
+                "default" => config.default = Some(value.to_string()),
+                "timeout" => config.timeout = Some(value.parse().unwrap_or_default()),
                 _ => continue,
             }
         }
@@ -40,7 +40,17 @@ impl FromStr for Config {
 
 impl ToString for Config {
     fn to_string(&self) -> String {
-        format!("default {}\ntimeout {}", self.default, self.timeout)
+        let mut buffer = String::new();
+
+        if let Some(default) = &self.default {
+            buffer.push_str(&format!("default {}\n", default));
+        }
+
+        if let Some(timeout) = &self.timeout {
+            buffer.push_str(&format!("timeout {}\n", timeout));
+        }
+
+        buffer
     }
 }
 
@@ -52,14 +62,14 @@ impl Config {
     /// ```
     /// use libsdbootconf::config::Config;
     ///
-    /// let config = Config::new("5.12.0-aosc-main", 5);
+    /// let config = Config::new(Some("5.12.0-aosc-main"), Some(5));
     ///
     /// assert_eq!(config.default, "5.12.0-aosc-main");
     /// assert_eq!(config.timeout, 5);
     /// ```
-    pub fn new(default: impl Into<String>, timeout: i32) -> Config {
+    pub fn new(default: Option<impl Into<String>>, timeout: Option<i32>) -> Config {
         Config {
-            default: default.into(),
+            default: default.map(|x| x.into()),
             timeout,
         }
     }
@@ -84,7 +94,7 @@ impl Config {
     /// ```no_run
     /// use libsdbootconf::config::Config;
     ///
-    /// let config = Config::new("5.12.0-aosc-main", 5);
+    /// let config = Config::new(Some("5.12.0-aosc-main"), Some(5));
     /// config.write("/path/to/config").unwrap();
     /// ```
     pub fn write(&self, path: impl AsRef<Path>) -> Result<(), LibSDBootConfError> {
