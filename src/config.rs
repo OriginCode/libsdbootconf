@@ -1,3 +1,5 @@
+//! Configuration of the installed systemd-boot environment.
+
 use std::{fs, path::Path, str::FromStr};
 
 use crate::{generate_builder_method, LibSDBootConfError};

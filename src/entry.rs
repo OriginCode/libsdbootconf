@@ -1,3 +1,5 @@
+//! Configuration of a boot entry.
+
 use std::{
     fs,
     path::{Path, PathBuf},
