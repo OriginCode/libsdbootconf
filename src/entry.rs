@@ -4,7 +4,7 @@ use std::{
     str::FromStr,
 };
 
-use crate::LibSDBootError;
+use crate::LibSDBootConfError;
 
 #[derive(Default, Debug)]
 pub struct Entry {
@@ -14,17 +14,24 @@ pub struct Entry {
 
 #[derive(Debug)]
 pub enum Token {
+    /// Text to show in the menu.
     Title(String),
+    /// Version string to append to the title when the title is not unique.
     Version(String),
+    /// Machine identifier to append to the title when the title is not unique.
     MachineID(String),
+    /// Executable EFI image.
     Efi(PathBuf),
+    /// Options to pass to the EFI image / kernel command line
     Options(String),
+    /// Linux kernel image (systemd-boot still requires the kernel to have an EFI stub)
     Linux(PathBuf),
+    /// Initramfs image (systemd-boot just adds this as option initrd=)
     Initrd(PathBuf),
 }
 
 impl FromStr for Entry {
-    type Err = LibSDBootError;
+    type Err = LibSDBootConfError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut entry = Entry::default();
@@ -36,8 +43,8 @@ impl FromStr for Entry {
             }
 
             let mut parts = line.splitn(2, ' ');
-            let key = parts.next().ok_or(LibSDBootError::EntryParseError)?;
-            let value = parts.next().ok_or(LibSDBootError::EntryParseError)?;
+            let key = parts.next().ok_or(LibSDBootConfError::EntryParseError)?;
+            let value = parts.next().ok_or(LibSDBootConfError::EntryParseError)?;
 
             entry.tokens.push(match key {
                 "title" => Token::Title(value.to_owned()),
@@ -81,16 +88,16 @@ impl Entry {
     /// # Examples
     ///
     /// ```
-    /// use libsdboot::entry::Entry;
-    /// use libsdboot::entry::Token;
+    /// use libsdbootconf::entry::Entry;
+    /// use libsdbootconf::entry::Token;
     ///
     /// let entry = Entry::new(
     ///     "5.12.0-aosc-main",
     ///     vec![Token::Title("5.12.0-aosc-main".to_string())],
     /// );
     ///
-    /// assert_eq!(config.default, "5.12.0-aosc-main");
-    /// assert_eq!(config.timeout, 5);
+    /// assert_eq!(entry.id, "5.12.0-aosc-main");
+    /// println!("{:?}", entry.tokens); // [Token::Title("title 5.12.0-aosc-main")]
     /// ```
     pub fn new(id: impl Into<String>, tokens: impl Into<Vec<Token>>) -> Entry {
         Entry {
@@ -104,12 +111,19 @@ impl Entry {
     /// # Examples
     ///
     /// ```no_run
-    /// use libsdboot::entry::Entry;
+    /// use libsdbootconf::entry::Entry;
     ///
     /// let entry = Entry::load("/path/to/config").unwrap();
     /// ```
-    pub fn load(path: impl AsRef<Path>) -> Result<Entry, LibSDBootError> {
-        let id = path.as_ref().file_name().unwrap().to_str().unwrap();
+    pub fn load(path: impl AsRef<Path>) -> Result<Entry, LibSDBootConfError> {
+        let id = path
+            .as_ref()
+            .file_name()
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .strip_suffix(".conf")
+            .ok_or_else(|| LibSDBootConfError::InvalidEntryFilename(path.as_ref().to_owned()))?;
         let mut entry = Entry::from_str(&fs::read_to_string(path.as_ref())?)?;
 
         entry.id = id.to_owned();
@@ -122,8 +136,8 @@ impl Entry {
     /// # Examples
     ///
     /// ```no_run
-    /// use libsdboot::entry::Entry;
-    /// use libsdboot::entry::Token;
+    /// use libsdbootconf::entry::Entry;
+    /// use libsdbootconf::entry::Token;
     ///
     /// let entry = Entry::new(
     ///     "5.12.0-aosc-main",
@@ -131,7 +145,7 @@ impl Entry {
     /// );
     /// entry.write("/path/to/entry").unwrap();
     /// ```
-    pub fn write(&self, path: impl AsRef<Path>) -> Result<(), LibSDBootError> {
+    pub fn write(&self, path: impl AsRef<Path>) -> Result<(), LibSDBootConfError> {
         let dest_path = path.as_ref().join(self.id.as_str());
 
         fs::write(dest_path, self.to_string())?;
