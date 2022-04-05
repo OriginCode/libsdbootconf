@@ -148,9 +148,7 @@ impl Entry {
     /// entry.write("/path/to/entry").unwrap();
     /// ```
     pub fn write(&self, path: impl AsRef<Path>) -> Result<(), LibSDBootConfError> {
-        let dest_path = path.as_ref().join(self.id.as_str());
-
-        fs::write(dest_path, self.to_string())?;
+        fs::write(path, self.to_string())?;
 
         Ok(())
     }
