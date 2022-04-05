@@ -7,17 +7,17 @@
 //! # Examples
 //!
 //! ```no_run
-//! use libsdbootconf::{SystemdBootConf, entry::{Entry, Token}};
+//! use libsdbootconf::{config::ConfigBuilder, entry::EntryBuilder, SystemdBootConfBuilder};
 //!
-//! let mut systemd_boot_conf = SystemdBootConf::new("/efi/loader");
-//!
-//! systemd_boot_conf.config.default = Some("5.12.0-aosc-main".to_owned());
-//! systemd_boot_conf.config.timeout = Some(5);
-//!
-//! systemd_boot_conf.entries.push(Entry::new(
-//!     "5.12.0-aosc-main",
-//!     vec![Token::Title("AOSC OS (5.12.0-aosc-main)".to_owned())]
-//! ));
+//! let systemd_boot_conf = SystemdBootConfBuilder::new("/efi/loader")
+//!     .config(ConfigBuilder::new()
+//!         .default("5.12.0-aosc-main")
+//!         .timeout(5)
+//!         .build())
+//!     .entry(EntryBuilder::new("5.12.0-aosc-main")
+//!         .title("5.12.0-aosc-main")
+//!         .build())
+//!     .build();
 //!
 //! systemd_boot_conf.write_all().unwrap();
 //! ```
@@ -30,6 +30,7 @@ use thiserror::Error;
 
 pub mod config;
 pub mod entry;
+mod macros;
 
 pub use config::Config;
 pub use entry::Entry;
@@ -141,5 +142,28 @@ impl SystemdBootConf {
         }
 
         Ok(())
+    }
+}
+
+/// Builder for SystemdBootConf.
+#[derive(Default, Debug)]
+pub struct SystemdBootConfBuilder {
+    systemd_boot_conf: SystemdBootConf,
+}
+
+impl SystemdBootConfBuilder {
+    /// Create an empty SystemdBootConfBuilder with a working directory.
+    pub fn new(working_dir: impl Into<PathBuf>) -> Self {
+        Self {
+            systemd_boot_conf: SystemdBootConf::new(working_dir),
+        }
+    }
+
+    generate_builder_method!(plain systemd_boot_conf, config, Config);
+    generate_builder_method!(plain systemd_boot_conf, entries, Vec<Entry>);
+
+    /// Build the SystemdBootConf.
+    pub fn build(self) -> SystemdBootConf {
+        self.systemd_boot_conf
     }
 }

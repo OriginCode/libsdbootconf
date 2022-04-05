@@ -4,7 +4,7 @@ use std::{
     str::FromStr,
 };
 
-use crate::LibSDBootConfError;
+use crate::{generate_builder_method, LibSDBootConfError};
 
 #[derive(Default, Debug)]
 pub struct Entry {
@@ -151,5 +151,47 @@ impl Entry {
         fs::write(dest_path, self.to_string())?;
 
         Ok(())
+    }
+}
+
+/// Builder for Entry.
+#[derive(Default, Debug)]
+pub struct EntryBuilder {
+    entry: Entry,
+}
+
+impl EntryBuilder {
+    /// Build an empty EntryBuilder with an entry id.
+    pub fn new(id: impl Into<String>) -> Self {
+        Self {
+            entry: Entry::new(id, Vec::new()),
+        }
+    }
+
+    generate_builder_method!(token title, impl Into<String>, Title);
+    generate_builder_method!(token version, impl Into<String>, Version);
+    generate_builder_method!(token machine_id, impl Into<String>, MachineID);
+    generate_builder_method!(token efi, impl Into<PathBuf>, Efi);
+    generate_builder_method!(token options, impl Into<String>, Options);
+    generate_builder_method!(token linux, impl Into<PathBuf>, Linux);
+    generate_builder_method!(token initrd, impl Into<PathBuf>, Initrd);
+
+    /// Build the Entry.
+    pub fn build(self) -> Entry {
+        self.entry
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_builder() {
+        let entry = EntryBuilder::new("5.12.0-aosc-main")
+            .title("5.12.0-aosc-main")
+            .build();
+
+        println!("{:?}", &entry);
     }
 }

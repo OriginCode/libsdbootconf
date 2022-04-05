@@ -1,6 +1,6 @@
 use std::{fs, path::Path, str::FromStr};
 
-use crate::LibSDBootConfError;
+use crate::{generate_builder_method, LibSDBootConfError};
 
 /// An abstraction over the configuration file of systemd-boot.
 #[derive(Default, Debug)]
@@ -101,5 +101,38 @@ impl Config {
         fs::write(path.as_ref(), self.to_string())?;
 
         Ok(())
+    }
+}
+
+/// Builder for Config.
+#[derive(Default, Debug)]
+pub struct ConfigBuilder {
+    config: Config,
+}
+
+impl ConfigBuilder {
+    /// Create an empty ConfigBuilder.
+    pub fn new() -> Self {
+        Self { config: Config::default() }
+    }
+
+    generate_builder_method!(option default, impl Into<String>);
+    generate_builder_method!(option timeout, i32);
+
+    /// Build the Config.
+    pub fn build(self) -> Config {
+        self.config
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_builder() {
+        let entry = ConfigBuilder::new().default("5.12.0-aosc-main").build();
+
+        println!("{:?}", &entry);
     }
 }
