@@ -121,9 +121,9 @@ impl Entry {
         let id = path
             .as_ref()
             .file_name()
-            .unwrap()
+            .ok_or_else(|| LibSDBootConfError::InvalidEntryFilename(path.as_ref().to_owned()))?
             .to_str()
-            .unwrap()
+            .ok_or_else(|| LibSDBootConfError::InvalidEntryFilename(path.as_ref().to_owned()))?
             .strip_suffix(".conf")
             .ok_or_else(|| LibSDBootConfError::InvalidEntryFilename(path.as_ref().to_owned()))?;
         let mut entry = Entry::from_str(&fs::read_to_string(path.as_ref())?)?;

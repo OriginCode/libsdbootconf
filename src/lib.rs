@@ -14,9 +14,9 @@
 //!         .default("5.12.0-aosc-main")
 //!         .timeout(5)
 //!         .build())
-//!     .entry(EntryBuilder::new("5.12.0-aosc-main")
+//!     .entries(vec![EntryBuilder::new("5.12.0-aosc-main")
 //!         .title("5.12.0-aosc-main")
-//!         .build())
+//!         .build()])
 //!     .build();
 //!
 //! systemd_boot_conf.write_all().unwrap();

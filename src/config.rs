@@ -66,8 +66,8 @@ impl Config {
     ///
     /// let config = Config::new(Some("5.12.0-aosc-main"), Some(5));
     ///
-    /// assert_eq!(config.default, "5.12.0-aosc-main");
-    /// assert_eq!(config.timeout, 5);
+    /// assert_eq!(config.default, Some("5.12.0-aosc-main".to_owned()));
+    /// assert_eq!(config.timeout, Some(5));
     /// ```
     pub fn new(default: Option<impl Into<String>>, timeout: Option<i32>) -> Config {
         Config {
