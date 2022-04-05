@@ -115,7 +115,9 @@ pub struct ConfigBuilder {
 impl ConfigBuilder {
     /// Create an empty ConfigBuilder.
     pub fn new() -> Self {
-        Self { config: Config::default() }
+        Self {
+            config: Config::default(),
+        }
     }
 
     generate_builder_method!(option default, impl Into<String>);
