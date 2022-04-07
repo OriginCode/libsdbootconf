@@ -7,7 +7,7 @@
 //! # Examples
 //!
 //! ```no_run
-//! use libsdbootconf::{config::ConfigBuilder, entry::EntryBuilder, SystemdBootConfBuilder};
+//! use libsdbootconf::{ConfigBuilder, EntryBuilder, SystemdBootConfBuilder};
 //!
 //! let systemd_boot_conf = SystemdBootConfBuilder::new("/efi/loader")
 //!     .config(ConfigBuilder::new()
@@ -15,7 +15,8 @@
 //!         .timeout(5)
 //!         .build())
 //!     .entries(vec![EntryBuilder::new("5.12.0-aosc-main")
-//!         .title("5.12.0-aosc-main")
+//!         .title("AOSC OS (5.12.0-aosc-main)")
+//!         .version("5.12.0-aosc-main")
 //!         .build()])
 //!     .build();
 //!
@@ -32,8 +33,8 @@ pub mod config;
 pub mod entry;
 mod macros;
 
-pub use config::Config;
-pub use entry::Entry;
+pub use config::{Config, ConfigBuilder};
+pub use entry::{Entry, EntryBuilder};
 
 #[derive(Error, Debug)]
 pub enum LibSDBootConfError {
