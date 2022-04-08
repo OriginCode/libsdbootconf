@@ -2,7 +2,7 @@
 
 use std::{fs, path::Path, str::FromStr};
 
-use crate::{generate_builder_method, LibSDBootConfError};
+use crate::{Entry, generate_builder_method, LibSDBootConfError};
 
 /// An abstraction over the configuration file of systemd-boot.
 #[derive(Default, Debug)]
@@ -103,6 +103,24 @@ impl Config {
         fs::write(path.as_ref(), self.to_string())?;
 
         Ok(())
+    }
+
+    /// Set an Entry as the default boot entry.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use libsdbootconf::{Entry, Config};
+    ///
+    /// let mut config = Config::default();
+    /// let entry = Entry::new("5.12.0-aosc-main", Vec::new());
+    ///
+    /// config.set_default(&entry);
+    ///
+    /// assert_eq!(config.default, Some("5.12.0-aosc-main".to_owned()));
+    /// ```
+    pub fn set_default(&mut self, default: &Entry) {
+        self.default = Some(default.id.to_owned());
     }
 }
 
