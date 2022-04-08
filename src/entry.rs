@@ -98,7 +98,7 @@ impl ToString for Entry {
 }
 
 impl Entry {
-    /// Create a new Entry.
+    /// Create a new `Entry`.
     ///
     /// # Examples
     ///
@@ -171,14 +171,14 @@ impl Entry {
     }
 }
 
-/// Builder for Entry.
+/// Builder for `Entry`.
 #[derive(Default, Debug)]
 pub struct EntryBuilder {
     entry: Entry,
 }
 
 impl EntryBuilder {
-    /// Build an empty EntryBuilder with an entry id.
+    /// Build an empty `EntryBuilder` with an entry id.
     pub fn new<S: Into<String>>(id: S) -> Self {
         Self {
             entry: Entry::new(id, Vec::new()),
@@ -214,7 +214,7 @@ impl EntryBuilder {
         token => Initrd REAL(entry) initrd(P => PathBuf)
     );
 
-    /// Build the Entry.
+    /// Build the `Entry`.
     pub fn build(self) -> Entry {
         self.entry
     }

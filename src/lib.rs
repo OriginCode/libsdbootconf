@@ -59,7 +59,7 @@ pub struct SystemdBootConf {
 }
 
 impl SystemdBootConf {
-    /// Create a new SystemdBootConf with a working directory.
+    /// Create a new `SystemdBootConf` with a working directory.
     ///
     /// # Examples
     ///
@@ -148,14 +148,14 @@ impl SystemdBootConf {
     }
 }
 
-/// Builder for SystemdBootConf.
+/// Builder for `SystemdBootConf`.
 #[derive(Default, Debug)]
 pub struct SystemdBootConfBuilder {
     systemd_boot_conf: SystemdBootConf,
 }
 
 impl SystemdBootConfBuilder {
-    /// Create an empty SystemdBootConfBuilder with a working directory.
+    /// Create an empty `SystemdBootConfBuilder` with a working directory.
     pub fn new<P: Into<PathBuf>>(working_dir: P) -> Self {
         Self {
             systemd_boot_conf: SystemdBootConf::new(working_dir),
@@ -171,7 +171,7 @@ impl SystemdBootConfBuilder {
         intoiter REAL(systemd_boot_conf) entries(E => Entry)
     );
 
-    /// Build the SystemdBootConf.
+    /// Build the `SystemdBootConf`.
     pub fn build(self) -> SystemdBootConf {
         self.systemd_boot_conf
     }

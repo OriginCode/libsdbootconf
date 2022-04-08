@@ -57,7 +57,7 @@ impl ToString for Config {
 }
 
 impl Config {
-    /// Create a new Config.
+    /// Create a new `Config`.
     ///
     /// # Examples
     ///
@@ -124,14 +124,14 @@ impl Config {
     }
 }
 
-/// Builder for Config.
+/// Builder for `Config`.
 #[derive(Default, Debug)]
 pub struct ConfigBuilder {
     config: Config,
 }
 
 impl ConfigBuilder {
-    /// Create an empty ConfigBuilder.
+    /// Create an empty `ConfigBuilder`.
     pub fn new() -> Self {
         Self {
             config: Config::default(),
@@ -154,7 +154,7 @@ impl ConfigBuilder {
         self
     }
 
-    /// Build the Config.
+    /// Build the `Config`.
     pub fn build(self) -> Config {
         self.config
     }
