@@ -7,6 +7,7 @@ use std::{
 };
 
 use crate::{generate_builder_method, LibSDBootConfError};
+
 #[derive(Debug)]
 pub enum Token {
     /// Text to show in the menu.

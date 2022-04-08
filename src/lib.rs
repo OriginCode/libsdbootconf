@@ -33,6 +33,7 @@ pub mod config;
 pub mod entry;
 mod macros;
 
+use crate::macros::generate_builder_method;
 pub use config::{Config, ConfigBuilder};
 pub use entry::{Entry, EntryBuilder};
 

@@ -1,4 +1,3 @@
-#[macro_export]
 macro_rules! generate_builder_method {
     // Build a plain builder method, with a real inner structure, a name of the function/parameter,
     // and a type of the parameter
@@ -59,3 +58,5 @@ macro_rules! generate_builder_method {
         }
     };
 }
+
+pub(crate) use generate_builder_method;

@@ -2,7 +2,7 @@
 
 use std::{fs, path::Path, str::FromStr};
 
-use crate::{Entry, generate_builder_method, LibSDBootConfError};
+use crate::{generate_builder_method, Entry, LibSDBootConfError};
 
 /// An abstraction over the configuration file of systemd-boot.
 #[derive(Default, Debug)]
