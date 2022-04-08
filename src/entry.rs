@@ -7,13 +7,6 @@ use std::{
 };
 
 use crate::{generate_builder_method, LibSDBootConfError};
-
-#[derive(Default, Debug)]
-pub struct Entry {
-    pub id: String,
-    pub tokens: Vec<Token>,
-}
-
 #[derive(Debug)]
 pub enum Token {
     /// Text to show in the menu.
@@ -32,6 +25,47 @@ pub enum Token {
     Initrd(PathBuf),
 }
 
+impl FromStr for Token {
+    type Err = LibSDBootConfError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut parts = s.splitn(2, ' ');
+        let key = parts.next().ok_or(LibSDBootConfError::EntryParseError)?;
+        let value = parts.next().ok_or(LibSDBootConfError::EntryParseError)?;
+
+        Ok(match key {
+            "title" => Self::Title(value.to_owned()),
+            "version" => Self::Version(value.to_owned()),
+            "machine-id" => Self::MachineID(value.to_owned()),
+            "efi" => Self::Efi(PathBuf::from(value)),
+            "options" => Self::Options(value.to_owned()),
+            "linux" => Self::Linux(PathBuf::from(value)),
+            "initrd" => Self::Initrd(PathBuf::from(value)),
+            _ => return Err(LibSDBootConfError::InvalidToken(key.to_owned())),
+        })
+    }
+}
+
+impl ToString for Token {
+    fn to_string(&self) -> String {
+        match self {
+            Self::Title(title) => format!("title {}\n", title),
+            Self::Version(version) => format!("version {}\n", version),
+            Self::MachineID(machine_id) => format!("machine-id {}\n", machine_id),
+            Self::Efi(efi) => format!("efi {}\n", efi.display()),
+            Self::Options(options) => format!("options {}\n", options),
+            Self::Linux(linux) => format!("linux {}\n", linux.display()),
+            Self::Initrd(initrd) => format!("initrd {}\n", initrd.display()),
+        }
+    }
+}
+
+#[derive(Default, Debug)]
+pub struct Entry {
+    pub id: String,
+    pub tokens: Vec<Token>,
+}
+
 impl FromStr for Entry {
     type Err = LibSDBootConfError;
 
@@ -44,20 +78,7 @@ impl FromStr for Entry {
                 continue;
             }
 
-            let mut parts = line.splitn(2, ' ');
-            let key = parts.next().ok_or(LibSDBootConfError::EntryParseError)?;
-            let value = parts.next().ok_or(LibSDBootConfError::EntryParseError)?;
-
-            entry.tokens.push(match key {
-                "title" => Token::Title(value.to_owned()),
-                "version" => Token::Version(value.to_owned()),
-                "machine-id" => Token::MachineID(value.to_owned()),
-                "efi" => Token::Efi(PathBuf::from(value)),
-                "options" => Token::Options(value.to_owned()),
-                "linux" => Token::Linux(PathBuf::from(value)),
-                "initrd" => Token::Initrd(PathBuf::from(value)),
-                _ => continue,
-            })
+            entry.tokens.push(line.parse()?);
         }
 
         Ok(entry)
@@ -69,15 +90,7 @@ impl ToString for Entry {
         let mut s = String::new();
 
         for token in &self.tokens {
-            s.push_str(&match token {
-                Token::Title(title) => format!("title {}\n", title),
-                Token::Version(version) => format!("version {}\n", version),
-                Token::MachineID(machine_id) => format!("machine-id {}\n", machine_id),
-                Token::Efi(efi) => format!("efi {}\n", efi.display()),
-                Token::Options(options) => format!("options {}\n", options),
-                Token::Linux(linux) => format!("linux {}\n", linux.display()),
-                Token::Initrd(initrd) => format!("initrd {}\n", initrd.display()),
-            })
+            s.push_str(&token.to_string())
         }
 
         s

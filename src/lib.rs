@@ -46,6 +46,8 @@ pub enum LibSDBootConfError {
     InvalidEntryFilename(PathBuf),
     #[error(transparent)]
     IOError(#[from] std::io::Error),
+    #[error("invalid token {0}")]
+    InvalidToken(String),
 }
 
 /// An abstraction over the basic structure of systemd-boot configurations.
