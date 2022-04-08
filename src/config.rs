@@ -69,7 +69,7 @@ impl Config {
     /// assert_eq!(config.default, Some("5.12.0-aosc-main".to_owned()));
     /// assert_eq!(config.timeout, Some(5));
     /// ```
-    pub fn new(default: Option<impl Into<String>>, timeout: Option<u32>) -> Config {
+    pub fn new<S: Into<String>>(default: Option<S>, timeout: Option<u32>) -> Config {
         Config {
             default: default.map(|x| x.into()),
             timeout,
@@ -85,7 +85,7 @@ impl Config {
     ///
     /// let config = Config::load("/path/to/config").unwrap();
     /// ```
-    pub fn load(path: impl AsRef<Path>) -> Result<Config, LibSDBootConfError> {
+    pub fn load<P: AsRef<Path>>(path: P) -> Result<Config, LibSDBootConfError> {
         Config::from_str(&fs::read_to_string(path.as_ref())?)
     }
 
@@ -99,7 +99,7 @@ impl Config {
     /// let config = Config::new(Some("5.12.0-aosc-main"), Some(5));
     /// config.write("/path/to/config").unwrap();
     /// ```
-    pub fn write(&self, path: impl AsRef<Path>) -> Result<(), LibSDBootConfError> {
+    pub fn write<P: AsRef<Path>>(&self, path: P) -> Result<(), LibSDBootConfError> {
         fs::write(path.as_ref(), self.to_string())?;
 
         Ok(())
@@ -138,8 +138,21 @@ impl ConfigBuilder {
         }
     }
 
-    generate_builder_method!(option default, impl Into<String>);
-    generate_builder_method!(option timeout, u32);
+    generate_builder_method!(
+        /// Set the default entry with a `String`.
+        option REAL(config) default(S => String)
+    );
+    generate_builder_method!(
+        /// Set the timeout.
+        option REAL(config) timeout(U => u32)
+    );
+
+    /// Set the default entry with an `Entry`.
+    pub fn default_entry(mut self, entry: &Entry) -> Self {
+        self.config.set_default(entry);
+
+        self
+    }
 
     /// Build the Config.
     pub fn build(self) -> Config {

@@ -12,10 +12,10 @@
 //! let systemd_boot_conf = SystemdBootConfBuilder::new("/efi/loader")
 //!     .config(ConfigBuilder::new()
 //!         .default("5.12.0-aosc-main")
-//!         .timeout(5)
+//!         .timeout(5u32)
 //!         .build())
 //!     .entries(vec![EntryBuilder::new("5.12.0-aosc-main")
-//!         .title("AOSC OS (5.12.0-aosc-main)")
+//!         .title("AOSC OS x86_64 (5.12.0-aosc-main)")
 //!         .version("5.12.0-aosc-main")
 //!         .build()])
 //!     .build();
@@ -70,7 +70,7 @@ impl SystemdBootConf {
     ///
     /// assert_eq!(systemd_boot_conf.working_dir, std::path::PathBuf::from("/efi/loader"));
     /// ```
-    pub fn new(working_dir: impl Into<PathBuf>) -> Self {
+    pub fn new<P: Into<PathBuf>>(working_dir: P) -> Self {
         Self {
             working_dir: working_dir.into(),
             ..Default::default()
@@ -86,7 +86,7 @@ impl SystemdBootConf {
     ///
     /// let systemd_boot_conf = SystemdBootConf::load("/efi/loader").unwrap();
     /// ```
-    pub fn load(working_dir: impl AsRef<Path>) -> Result<Self, LibSDBootConfError> {
+    pub fn load<P: AsRef<Path>>(working_dir: P) -> Result<Self, LibSDBootConfError> {
         let mut systemd_boot_conf = Self::new(working_dir.as_ref());
 
         systemd_boot_conf.load_current()?;
@@ -156,14 +156,20 @@ pub struct SystemdBootConfBuilder {
 
 impl SystemdBootConfBuilder {
     /// Create an empty SystemdBootConfBuilder with a working directory.
-    pub fn new(working_dir: impl Into<PathBuf>) -> Self {
+    pub fn new<P: Into<PathBuf>>(working_dir: P) -> Self {
         Self {
             systemd_boot_conf: SystemdBootConf::new(working_dir),
         }
     }
 
-    generate_builder_method!(plain systemd_boot_conf, config, Config);
-    generate_builder_method!(plain systemd_boot_conf, entries, Vec<Entry>);
+    generate_builder_method!(
+        /// Add a systemd-boot loader `Config`.
+        plain REAL(systemd_boot_conf) config(Config)
+    );
+    generate_builder_method!(
+        /// Add a list of `Entry`.
+        intoiter REAL(systemd_boot_conf) entries(E => Entry)
+    );
 
     /// Build the SystemdBootConf.
     pub fn build(self) -> SystemdBootConf {

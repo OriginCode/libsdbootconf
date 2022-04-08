@@ -14,7 +14,7 @@ use libsdbootconf::{config::ConfigBuilder, entry::EntryBuilder, SystemdBootConfB
 let systemd_boot_conf = SystemdBootConfBuilder::new("/efi/loader")
     .config(ConfigBuilder::new()
         .default("5.12.0-aosc-main")
-        .timeout(5)
+        .timeout(5u32)
         .build())
     .entry(vec![EntryBuilder::new("5.12.0-aosc-main")
         .title("AOSC OS x86_64 (5.12.0-aosc-main)")

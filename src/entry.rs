@@ -114,10 +114,14 @@ impl Entry {
     /// assert_eq!(entry.id, "5.12.0-aosc-main");
     /// println!("{:?}", entry.tokens); // [Token::Title("title 5.12.0-aosc-main")]
     /// ```
-    pub fn new(id: impl Into<String>, tokens: impl Into<Vec<Token>>) -> Entry {
+    pub fn new<S, T>(id: S, tokens: T) -> Entry
+    where
+        S: Into<String>,
+        T: IntoIterator<Item = Token>,
+    {
         Entry {
             id: id.into(),
-            tokens: tokens.into(),
+            tokens: tokens.into_iter().collect(),
         }
     }
 
@@ -130,7 +134,7 @@ impl Entry {
     ///
     /// let entry = Entry::load("/path/to/config").unwrap();
     /// ```
-    pub fn load(path: impl AsRef<Path>) -> Result<Entry, LibSDBootConfError> {
+    pub fn load<P: AsRef<Path>>(path: P) -> Result<Entry, LibSDBootConfError> {
         let id = path
             .as_ref()
             .file_name()
@@ -160,7 +164,7 @@ impl Entry {
     /// );
     /// entry.write("/path/to/entry").unwrap();
     /// ```
-    pub fn write(&self, path: impl AsRef<Path>) -> Result<(), LibSDBootConfError> {
+    pub fn write<P: AsRef<Path>>(&self, path: P) -> Result<(), LibSDBootConfError> {
         fs::write(path, self.to_string())?;
 
         Ok(())
@@ -175,19 +179,40 @@ pub struct EntryBuilder {
 
 impl EntryBuilder {
     /// Build an empty EntryBuilder with an entry id.
-    pub fn new(id: impl Into<String>) -> Self {
+    pub fn new<S: Into<String>>(id: S) -> Self {
         Self {
             entry: Entry::new(id, Vec::new()),
         }
     }
 
-    generate_builder_method!(token title, impl Into<String>, Title);
-    generate_builder_method!(token version, impl Into<String>, Version);
-    generate_builder_method!(token machine_id, impl Into<String>, MachineID);
-    generate_builder_method!(token efi, impl Into<PathBuf>, Efi);
-    generate_builder_method!(token options, impl Into<String>, Options);
-    generate_builder_method!(token linux, impl Into<PathBuf>, Linux);
-    generate_builder_method!(token initrd, impl Into<PathBuf>, Initrd);
+    generate_builder_method!(
+        /// Add a `Title` to the entry.
+        token => Title REAL(entry) title(S => String)
+    );
+    generate_builder_method!(
+        /// Add a `Version` to the entry.
+        token => Version REAL(entry) version(S => String)
+    );
+    generate_builder_method!(
+        /// Add a `MachineID` to the entry.
+        token => MachineID REAL(entry) machine_id(S => String)
+    );
+    generate_builder_method!(
+        /// Add an `Efi` to the entry.
+        token => Efi REAL(entry) efi(P => PathBuf)
+    );
+    generate_builder_method!(
+        /// Add an `Options` to the entry.
+        token => Options REAL(entry) options(S => String)
+    );
+    generate_builder_method!(
+        /// Add a `Linux` to the entry.
+        token => Linux REAL(entry) linux(P => PathBuf)
+    );
+    generate_builder_method!(
+        /// Add an `Initrd` to the entry.
+        token => Initrd REAL(entry) initrd(P => PathBuf)
+    );
 
     /// Build the Entry.
     pub fn build(self) -> Entry {
