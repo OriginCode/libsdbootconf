@@ -10,7 +10,7 @@ pub struct Config {
     /// Pattern to select the default entry in the list of entries.
     pub default: Option<String>,
     /// Timeout in seconds for how long to show the menu.
-    pub timeout: Option<i32>,
+    pub timeout: Option<u32>,
 }
 
 impl FromStr for Config {
@@ -69,7 +69,7 @@ impl Config {
     /// assert_eq!(config.default, Some("5.12.0-aosc-main".to_owned()));
     /// assert_eq!(config.timeout, Some(5));
     /// ```
-    pub fn new(default: Option<impl Into<String>>, timeout: Option<i32>) -> Config {
+    pub fn new(default: Option<impl Into<String>>, timeout: Option<u32>) -> Config {
         Config {
             default: default.map(|x| x.into()),
             timeout,
@@ -121,7 +121,7 @@ impl ConfigBuilder {
     }
 
     generate_builder_method!(option default, impl Into<String>);
-    generate_builder_method!(option timeout, i32);
+    generate_builder_method!(option timeout, u32);
 
     /// Build the Config.
     pub fn build(self) -> Config {
