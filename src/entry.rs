@@ -1,4 +1,25 @@
 //! Configuration of a boot entry.
+//!
+//! Create an `Entry` by using either `Entry::new()` or `EntryBuilder` to build an `Entry` from
+//! scratch.
+//!
+//! Tokens are the possible fields of an `Entry`, visit
+//! <https://www.freedesktop.org/wiki/Software/systemd/systemd-boot/> for more information.
+//!
+//! # Examples
+//!
+//! ```
+//! use libsdbootconf::entry::{Entry, EntryBuilder, Token};
+//!
+//! let entry = Entry::new(
+//!     "5.12.0-aosc-main",
+//!     vec![Token::Title("AOSC OS x86_64 (5.12.0-aosc-main)".to_owned())]
+//! );
+//! let built = EntryBuilder::new("5.12.0-aosc-main")
+//!     .title("AOSC OS x86_64 (5.12.0-aosc-main)")
+//!     .build();
+//!
+//! assert_eq!(entry.to_string(), built.to_string());
 
 use std::{
     fs,
@@ -8,6 +29,7 @@ use std::{
 
 use crate::{generate_builder_method, LibSDBootConfError};
 
+/// Possible fields of an `Entry`.
 #[derive(Debug)]
 pub enum Token {
     /// Text to show in the menu.
@@ -61,9 +83,13 @@ impl ToString for Token {
     }
 }
 
+/// A boot menu entry.
 #[derive(Default, Debug)]
 pub struct Entry {
+    /// The ID of the `Entry`, used in the filename of the entry and the `default` field in a
+    /// `Config`.
     pub id: String,
+    /// The fields of the `Entry`.
     pub tokens: Vec<Token>,
 }
 
@@ -188,31 +214,31 @@ impl EntryBuilder {
 
     generate_builder_method!(
         /// Add a `Title` to the entry.
-        token => Title REAL(entry) title(S => String)
+        token Token::Title INNER(entry) title(S: String)
     );
     generate_builder_method!(
         /// Add a `Version` to the entry.
-        token => Version REAL(entry) version(S => String)
+        token Token::Version INNER(entry) version(S: String)
     );
     generate_builder_method!(
         /// Add a `MachineID` to the entry.
-        token => MachineID REAL(entry) machine_id(S => String)
+        token Token::MachineID INNER(entry) machine_id(S: String)
     );
     generate_builder_method!(
         /// Add an `Efi` to the entry.
-        token => Efi REAL(entry) efi(P => PathBuf)
+        token Token::Efi INNER(entry) efi(P: PathBuf)
     );
     generate_builder_method!(
         /// Add an `Options` to the entry.
-        token => Options REAL(entry) options(S => String)
+        token Token::Options INNER(entry) options(S: String)
     );
     generate_builder_method!(
         /// Add a `Linux` to the entry.
-        token => Linux REAL(entry) linux(P => PathBuf)
+        token Token::Linux INNER(entry) linux(P: PathBuf)
     );
     generate_builder_method!(
         /// Add an `Initrd` to the entry.
-        token => Initrd REAL(entry) initrd(P => PathBuf)
+        token Token::Initrd INNER(entry) initrd(P: PathBuf)
     );
 
     /// Build the `Entry`.

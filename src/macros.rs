@@ -3,11 +3,11 @@ macro_rules! generate_builder_method {
     // and a type of the parameter
     (
         $(#[$meta:meta])*
-        plain REAL($real:ident) $name:ident($t:ty)
+        plain INNER($inner:ident) $name:ident($t:ty)
     ) => {
         $(#[$meta])*
         pub fn $name(mut self, $name: $t) -> Self {
-            self.$real.$name = $name;
+            self.$inner.$name = $name;
 
             self
         }
@@ -17,14 +17,14 @@ macro_rules! generate_builder_method {
     // the function/parameter, a generic name, and a type of the expected parameter
     (
         $(#[$meta:meta])*
-        intoiter REAL($real:ident) $name:ident($t:ident => $into:ty)
+        intoiter INNER($inner:ident) $name:ident($t:ident: $into:ty)
     ) => {
         $(#[$meta])*
         pub fn $name<$t>(mut self, $name: $t) -> Self
         where
             $t: IntoIterator<Item = $into>,
         {
-            self.$real.$name = $name.into_iter().collect();
+            self.$inner.$name = $name.into_iter().collect();
 
             self
         }
@@ -34,11 +34,11 @@ macro_rules! generate_builder_method {
     // the function/parameter, a generic name, and a type of the expected parameter
     (
         $(#[$meta:meta])*
-        option REAL($real:ident) $name:ident($t:ident => $into:ty)
+        option INNER($inner:ident) $name:ident($t:ident: $into:ty)
     ) => {
         $(#[$meta])*
         pub fn $name<$t: Into<$into>>(mut self, $name: $t) -> Self {
-            self.$real.$name = Some($name.into());
+            self.$inner.$name = Some($name.into());
 
             self
         }
@@ -48,11 +48,11 @@ macro_rules! generate_builder_method {
     // the function/parameter, a generic name, and a type of the expected parameter
     (
         $(#[$meta:meta])*
-        token => $token:ident REAL($real:ident) $name:ident($t:ident => $into:ty)
+        token $parent:ident::$token:ident INNER($inner:ident) $name:ident($t:ident: $into:ty)
     ) => {
         $(#[$meta])*
         pub fn $name<$t: Into<$into>>(mut self, $name: $t) -> Self {
-            self.$real.tokens.push(Token::$token($name.into()));
+            self.$inner.tokens.push($parent::$token($name.into()));
 
             self
         }

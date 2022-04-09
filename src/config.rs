@@ -1,10 +1,27 @@
 //! Configuration of the installed systemd-boot environment.
+//!
+//! Create a Config by using either `Config::new()`, or `ConfigBuilder` to build a `Config` from
+//! scratch.
+//!
+//! # Examples
+//!
+//! ```
+//! use libsdbootconf::config::{Config, ConfigBuilder};
+//!
+//! let config = Config::new(Some("5.12.0-aosc-main"), Some(5u32));
+//! let built = ConfigBuilder::new()
+//!     .default("5.12.0-aosc-main")
+//!     .timeout(5u32)
+//!     .build();
+//!
+//! assert_eq!(config.to_string(), built.to_string());
+//! ```
 
 use std::{fs, path::Path, str::FromStr};
 
 use crate::{generate_builder_method, Entry, LibSDBootConfError};
 
-/// An abstraction over the configuration file of systemd-boot.
+/// A systemd-boot loader configuration.
 #[derive(Default, Debug)]
 pub struct Config {
     /// Pattern to select the default entry in the list of entries.
@@ -64,15 +81,19 @@ impl Config {
     /// ```
     /// use libsdbootconf::config::Config;
     ///
-    /// let config = Config::new(Some("5.12.0-aosc-main"), Some(5));
+    /// let config = Config::new(Some("5.12.0-aosc-main"), Some(5u32));
     ///
     /// assert_eq!(config.default, Some("5.12.0-aosc-main".to_owned()));
     /// assert_eq!(config.timeout, Some(5));
     /// ```
-    pub fn new<S: Into<String>>(default: Option<S>, timeout: Option<u32>) -> Config {
+    pub fn new<S, U>(default: Option<S>, timeout: Option<U>) -> Config
+    where
+        S: Into<String>,
+        U: Into<u32>,
+    {
         Config {
-            default: default.map(|x| x.into()),
-            timeout,
+            default: default.map(|s| s.into()),
+            timeout: timeout.map(|u| u.into()),
         }
     }
 
@@ -96,7 +117,7 @@ impl Config {
     /// ```no_run
     /// use libsdbootconf::config::Config;
     ///
-    /// let config = Config::new(Some("5.12.0-aosc-main"), Some(5));
+    /// let config = Config::new(Some("5.12.0-aosc-main"), Some(5u32));
     /// config.write("/path/to/config").unwrap();
     /// ```
     pub fn write<P: AsRef<Path>>(&self, path: P) -> Result<(), LibSDBootConfError> {
@@ -140,11 +161,11 @@ impl ConfigBuilder {
 
     generate_builder_method!(
         /// Set the default entry with a `String`.
-        option REAL(config) default(S => String)
+        option INNER(config) default(S: String)
     );
     generate_builder_method!(
         /// Set the timeout.
-        option REAL(config) timeout(U => u32)
+        option INNER(config) timeout(U: u32)
     );
 
     /// Set the default entry with an `Entry`.
@@ -157,17 +178,5 @@ impl ConfigBuilder {
     /// Build the `Config`.
     pub fn build(self) -> Config {
         self.config
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_builder() {
-        let entry = ConfigBuilder::new().default("5.12.0-aosc-main").build();
-
-        println!("{:?}", &entry);
     }
 }

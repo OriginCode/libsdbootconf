@@ -1,10 +1,14 @@
-//! This library provides a general purpose configuration interface for systemd-boot.
-//! It parses systemd-boot configuration and systemd-boot entry configuration.
+//! This library provides a configuration interface for systemd-boot. It parses systemd-boot loader
+//! configuration and systemd-boot entry configuration.
 //!
-//! Visit [systemd-boot](https://www.freedesktop.org/wiki/Software/systemd/systemd-boot/) for
-//! more information.
+//! **NOTE**: Not all fields in <https://www.freedesktop.org/software/systemd/man/systemd-boot.html>
+//! are implemented, this library currently only provides interface for the fields listed on
+//! <https://www.freedesktop.org/wiki/Software/systemd/systemd-boot/>.
 //!
-//! # Examples
+//! # Create and write a new systemd-boot configuration
+//!
+//! You can use the `SystemdBootConfig` struct to create a new systemd-boot configuration, or use
+//! `SystemdBootConfigBuilder` to build a `SystemdBootConfig` from scratch.
 //!
 //! ```no_run
 //! use libsdbootconf::{ConfigBuilder, EntryBuilder, SystemdBootConfBuilder};
@@ -20,7 +24,49 @@
 //!         .build()])
 //!     .build();
 //!
+//! // Or
+//! use libsdbootconf::{Config, Entry, SystemdBootConf, entry::Token};
+//!
+//! let systemd_boot_conf = SystemdBootConf::new(
+//!     "/efi/loader",
+//!     Config::new(Some("5.12.0-aosc-main"), Some(5u32)),
+//!     vec![Entry::new(
+//!         "5.12.0-aosc-main",
+//!         vec![
+//!             Token::Title("AOSC OS x86_64 (5.12.0-aosc-main)".to_owned()),
+//!             Token::Version("5.12.0-aosc-main".to_owned()),
+//!         ],
+//!     )]
+//! );
+//!
 //! systemd_boot_conf.write_all().unwrap();
+//! ```
+//!
+//! # Create a new systemd-boot menu entry
+//!
+//! ```no_run
+//! use libsdbootconf::entry::{Entry, EntryBuilder, Token};
+//! use std::path::PathBuf;
+//!
+//! let entry = EntryBuilder::new("5.12.0-aosc-main")
+//!     .title("AOSC OS x86_64 (5.12.0-aosc-main)")
+//!     .linux("/EFI/linux/vmlinux-5.12.0-aosc-main")
+//!     .initrd("/EFI/linux/initramfs-5.12.0-aosc-main.img")
+//!     .options("root=/dev/sda1 rw")
+//!     .build();
+//!
+//! // Or
+//! let entry = Entry::new(
+//!     "5.12.0-aosc-main",
+//!     vec![
+//!         Token::Title("AOSC OS x86_64 (5.12.0-aosc-main)".to_owned()),
+//!         Token::Linux(PathBuf::from("/EFI/linux/vmlinux-5.12.0-aosc-main")),
+//!         Token::Initrd(PathBuf::from("/EFI/linux/initramfs-5.12.0-aosc-main.img")),
+//!         Token::Options("root=/dev/sda1 rw".to_owned()),
+//!     ],
+//! );
+//!
+//! entry.write("/efi/loader/entries/5.12.0-aosc-main.conf").unwrap();
 //! ```
 
 use std::{
@@ -35,7 +81,7 @@ mod macros;
 
 use crate::macros::generate_builder_method;
 pub use config::{Config, ConfigBuilder};
-pub use entry::{Entry, EntryBuilder};
+pub use entry::{Entry, EntryBuilder, Token};
 
 #[derive(Error, Debug)]
 pub enum LibSDBootConfError {
@@ -60,18 +106,43 @@ pub struct SystemdBootConf {
 }
 
 impl SystemdBootConf {
-    /// Create a new `SystemdBootConf` with a working directory.
+    /// Create a new `SystemdBootConf` with a working directory, a configuration, and a list of
+    /// entries.
     ///
     /// # Examples
     ///
     /// ```
     /// use libsdbootconf::SystemdBootConf;
     ///
-    /// let systemd_boot_conf = SystemdBootConf::new("/efi/loader");
+    /// let systemd_boot_conf = SystemdBootConf::init("/efi/loader");
     ///
     /// assert_eq!(systemd_boot_conf.working_dir, std::path::PathBuf::from("/efi/loader"));
     /// ```
-    pub fn new<P: Into<PathBuf>>(working_dir: P) -> Self {
+    pub fn new<P, C, E>(working_dir: P, config: C, entries: E) -> Self
+    where
+        P: Into<PathBuf>,
+        C: Into<Config>,
+        E: IntoIterator<Item = Entry>,
+    {
+        Self {
+            working_dir: working_dir.into(),
+            config: config.into(),
+            entries: entries.into_iter().collect(),
+        }
+    }
+
+    /// Initialize a new `SystemdBootConf` with a working directory.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use libsdbootconf::SystemdBootConf;
+    ///
+    /// let systemd_boot_conf = SystemdBootConf::init("/efi/loader");
+    ///
+    /// assert_eq!(systemd_boot_conf.working_dir, std::path::PathBuf::from("/efi/loader"));
+    /// ```
+    pub fn init<P: Into<PathBuf>>(working_dir: P) -> Self {
         Self {
             working_dir: working_dir.into(),
             ..Default::default()
@@ -88,7 +159,7 @@ impl SystemdBootConf {
     /// let systemd_boot_conf = SystemdBootConf::load("/efi/loader").unwrap();
     /// ```
     pub fn load<P: AsRef<Path>>(working_dir: P) -> Result<Self, LibSDBootConfError> {
-        let mut systemd_boot_conf = Self::new(working_dir.as_ref());
+        let mut systemd_boot_conf = Self::init(working_dir.as_ref());
 
         systemd_boot_conf.load_current()?;
 
@@ -102,7 +173,8 @@ impl SystemdBootConf {
     /// ```no_run
     /// use libsdbootconf::SystemdBootConf;
     ///
-    /// let mut systemd_boot_conf = SystemdBootConf::new("/efi/loader");
+    /// let mut systemd_boot_conf = SystemdBootConf::init("/efi/loader");
+    ///
     /// systemd_boot_conf.load_current().unwrap();
     /// ```
     pub fn load_current(&mut self) -> Result<(), LibSDBootConfError> {
@@ -123,14 +195,14 @@ impl SystemdBootConf {
         Ok(())
     }
 
-    /// Write all configurations and entries to system.
+    /// Write all configurations and entries to the system.
     ///
     /// # Examples
     ///
     /// ```no_run
     /// use libsdbootconf::SystemdBootConf;
     ///
-    /// let systemd_boot_conf = SystemdBootConf::new("/efi/loader");
+    /// let systemd_boot_conf = SystemdBootConf::init("/efi/loader");
     ///
     /// systemd_boot_conf.write_all().unwrap();
     /// ```
@@ -159,17 +231,17 @@ impl SystemdBootConfBuilder {
     /// Create an empty `SystemdBootConfBuilder` with a working directory.
     pub fn new<P: Into<PathBuf>>(working_dir: P) -> Self {
         Self {
-            systemd_boot_conf: SystemdBootConf::new(working_dir),
+            systemd_boot_conf: SystemdBootConf::init(working_dir),
         }
     }
 
     generate_builder_method!(
         /// Add a systemd-boot loader `Config`.
-        plain REAL(systemd_boot_conf) config(Config)
+        plain INNER(systemd_boot_conf) config(Config)
     );
     generate_builder_method!(
         /// Add a list of `Entry`.
-        intoiter REAL(systemd_boot_conf) entries(E => Entry)
+        intoiter INNER(systemd_boot_conf) entries(E: Entry)
     );
 
     /// Build the `SystemdBootConf`.
