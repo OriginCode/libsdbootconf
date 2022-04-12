@@ -16,7 +16,7 @@
 //! let systemd_boot_conf = SystemdBootConfBuilder::new("/efi/loader")
 //!     .config(ConfigBuilder::new()
 //!         .default("5.12.0-aosc-main")
-//!         .timeout(5u32)
+//!         .timeout(5)
 //!         .build())
 //!     .entries(vec![EntryBuilder::new("5.12.0-aosc-main")
 //!         .title("AOSC OS x86_64 (5.12.0-aosc-main)")
@@ -25,11 +25,11 @@
 //!     .build();
 //!
 //! // Or
-//! use libsdbootconf::{Config, Entry, SystemdBootConf, entry::Token};
+//! use libsdbootconf::{Config, Entry, SystemdBootConf, Token};
 //!
 //! let systemd_boot_conf = SystemdBootConf::new(
 //!     "/efi/loader",
-//!     Config::new(Some("5.12.0-aosc-main"), Some(5u32)),
+//!     Config::new(Some("5.12.0-aosc-main"), Some(5)),
 //!     vec![Entry::new(
 //!         "5.12.0-aosc-main",
 //!         vec![

@@ -8,10 +8,10 @@
 //! ```
 //! use libsdbootconf::config::{Config, ConfigBuilder};
 //!
-//! let config = Config::new(Some("5.12.0-aosc-main"), Some(5u32));
+//! let config = Config::new(Some("5.12.0-aosc-main"), Some(5));
 //! let built = ConfigBuilder::new()
 //!     .default("5.12.0-aosc-main")
-//!     .timeout(5u32)
+//!     .timeout(5)
 //!     .build();
 //!
 //! assert_eq!(config.to_string(), built.to_string());
@@ -81,7 +81,7 @@ impl Config {
     /// ```
     /// use libsdbootconf::config::Config;
     ///
-    /// let config = Config::new(Some("5.12.0-aosc-main"), Some(5u32));
+    /// let config = Config::new(Some("5.12.0-aosc-main"), Some(5));
     ///
     /// assert_eq!(config.default, Some("5.12.0-aosc-main".to_owned()));
     /// assert_eq!(config.timeout, Some(5));
@@ -117,7 +117,7 @@ impl Config {
     /// ```no_run
     /// use libsdbootconf::config::Config;
     ///
-    /// let config = Config::new(Some("5.12.0-aosc-main"), Some(5u32));
+    /// let config = Config::new(Some("5.12.0-aosc-main"), Some(5));
     /// config.write("/path/to/config").unwrap();
     /// ```
     pub fn write<P: AsRef<Path>>(&self, path: P) -> Result<(), LibSDBootConfError> {
