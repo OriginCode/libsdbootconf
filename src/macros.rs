@@ -17,14 +17,14 @@ macro_rules! generate_builder_method {
     // the function/parameter, a generic name, and a type of the expected parameter
     (
         $(#[$meta:meta])*
-        intoiter INNER($inner:ident) $name:ident($t:ident: $into:ty)
+        into INNER($inner:ident) $name:ident($t:ident: $into:ty)
     ) => {
         $(#[$meta])*
         pub fn $name<$t>(mut self, $name: $t) -> Self
         where
-            $t: IntoIterator<Item = $into>,
+            $t: Into<$into>,
         {
-            self.$inner.$name = $name.into_iter().collect();
+            self.$inner.$name = $name.into();
 
             self
         }

@@ -16,12 +16,12 @@
 //! let systemd_boot_conf = SystemdBootConfBuilder::new("/efi/loader")
 //!     .config(ConfigBuilder::new()
 //!         .default("5.12.0-aosc-main")
-//!         .timeout(5)
+//!         .timeout(5u32)
 //!         .build())
-//!     .entries(vec![EntryBuilder::new("5.12.0-aosc-main")
+//!     .entry(EntryBuilder::new("5.12.0-aosc-main")
 //!         .title("AOSC OS x86_64 (5.12.0-aosc-main)")
 //!         .version("5.12.0-aosc-main")
-//!         .build()])
+//!         .build())
 //!     .build();
 //!
 //! // Or
@@ -29,7 +29,7 @@
 //!
 //! let systemd_boot_conf = SystemdBootConf::new(
 //!     "/efi/loader",
-//!     Config::new(Some("5.12.0-aosc-main"), Some(5)),
+//!     Config::new(Some("5.12.0-aosc-main"), Some(5u32)),
 //!     vec![Entry::new(
 //!         "5.12.0-aosc-main",
 //!         vec![
@@ -122,12 +122,12 @@ impl SystemdBootConf {
     where
         P: Into<PathBuf>,
         C: Into<Config>,
-        E: IntoIterator<Item = Entry>,
+        E: Into<Vec<Entry>>, 
     {
         Self {
             working_dir: working_dir.into(),
             config: config.into(),
-            entries: entries.into_iter().collect(),
+            entries: entries.into(),
         }
     }
 
@@ -241,8 +241,15 @@ impl SystemdBootConfBuilder {
     );
     generate_builder_method!(
         /// Add a list of `Entry`.
-        intoiter INNER(systemd_boot_conf) entries(E: Entry)
+        into INNER(systemd_boot_conf) entries(E: Vec<Entry>)
     );
+
+    /// Add an `Entry`
+    pub fn entry(mut self, entry: Entry) -> Self {
+        self.systemd_boot_conf.entries.push(entry);
+
+        self
+    }
 
     /// Build the `SystemdBootConf`.
     pub fn build(self) -> SystemdBootConf {
