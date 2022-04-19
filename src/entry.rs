@@ -101,7 +101,7 @@ impl FromStr for Entry {
         let lines = s.lines();
 
         for line in lines {
-            if line.starts_with('#') {
+            if line.starts_with('#') || line.is_empty() {
                 continue;
             }
 
