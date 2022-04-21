@@ -195,6 +195,46 @@ impl SystemdBootConf {
         Ok(())
     }
 
+    /// Write systemd-boot configuration file to the system.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use libsdbootconf::SystemdBootConf;
+    ///
+    /// let systemd_boot_conf = SystemdBootConf::init("/efi/loader");
+    ///
+    /// systemd_boot_conf.write_config().unwrap();
+    /// ```
+    pub fn write_config(&self) -> Result<(), LibSDBootConfError> {
+        self.config.write(self.working_dir.join("loader.conf"))?;
+        
+        Ok(())
+    }
+
+    /// Write all entries to the system.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use libsdbootconf::SystemdBootConf;
+    ///
+    /// let systemd_boot_conf = SystemdBootConf::init("/efi/loader");
+    ///
+    /// systemd_boot_conf.write_entries().unwrap();
+    /// ```
+    pub fn write_entries(&self) -> Result<(), LibSDBootConfError> {
+        for entry in self.entries.iter() {
+            entry.write(
+                self.working_dir
+                    .join("entries")
+                    .join(format!("{}.conf", entry.id)),
+            )?;
+        }
+
+        Ok(())
+    }
+ 
     /// Write all configurations and entries to the system.
     ///
     /// # Examples
@@ -207,15 +247,8 @@ impl SystemdBootConf {
     /// systemd_boot_conf.write_all().unwrap();
     /// ```
     pub fn write_all(&self) -> Result<(), LibSDBootConfError> {
-        self.config.write(self.working_dir.join("loader.conf"))?;
-
-        for entry in self.entries.iter() {
-            entry.write(
-                self.working_dir
-                    .join("entries")
-                    .join(format!("{}.conf", entry.id)),
-            )?;
-        }
+        self.write_config()?;
+        self.write_entries()?;
 
         Ok(())
     }
