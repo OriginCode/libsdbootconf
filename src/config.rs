@@ -17,7 +17,7 @@
 //! assert_eq!(config.to_string(), built.to_string());
 //! ```
 
-use std::{fs, path::Path, str::FromStr};
+use std::{fs, ops::Not, path::Path, str::FromStr};
 
 use crate::{generate_builder_method, Entry, LibSDBootConfError};
 
@@ -138,45 +138,54 @@ impl Config {
     ///
     /// config.set_default(&entry);
     ///
-    /// assert_eq!(config.default, Some("5.12.0-aosc-main".to_owned()));
+    /// assert_eq!(config.default, Some("5.12.0-aosc-main.conf".to_owned()));
     /// ```
     pub fn set_default(&mut self, default: &Entry) {
-        self.default = Some(default.id.to_owned());
+        self.default = Some(
+            default.id.to_string()
+                + default
+                    .id
+                    .to_string()
+                    .ends_with(".conf")
+                    .not()
+                    .then(|| ".conf")
+                    .unwrap_or_default(),
+        );
     }
 }
 
 /// Builder for `Config`.
 #[derive(Default, Debug)]
 pub struct ConfigBuilder {
-    config: Config,
+    inner: Config,
 }
 
 impl ConfigBuilder {
     /// Create an empty `ConfigBuilder`.
     pub fn new() -> Self {
         Self {
-            config: Config::default(),
+            inner: Config::default(),
         }
     }
 
     generate_builder_method!(
         /// Set the default entry with a `String`.
-        option INNER(config) default(S: String)
+        option INNER(inner) default(S: String)
     );
     generate_builder_method!(
         /// Set the timeout.
-        option INNER(config) timeout(U: u32)
+        option INNER(inner) timeout(U: u32)
     );
 
     /// Set the default entry with an `Entry`.
     pub fn default_entry(mut self, entry: &Entry) -> Self {
-        self.config.set_default(entry);
+        self.inner.set_default(entry);
 
         self
     }
 
     /// Build the `Config`.
     pub fn build(self) -> Config {
-        self.config
+        self.inner
     }
 }

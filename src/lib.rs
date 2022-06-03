@@ -257,35 +257,35 @@ impl SystemdBootConf {
 /// Builder for `SystemdBootConf`.
 #[derive(Default, Debug)]
 pub struct SystemdBootConfBuilder {
-    systemd_boot_conf: SystemdBootConf,
+    inner: SystemdBootConf,
 }
 
 impl SystemdBootConfBuilder {
     /// Create an empty `SystemdBootConfBuilder` with a working directory.
     pub fn new<P: Into<PathBuf>>(working_dir: P) -> Self {
         Self {
-            systemd_boot_conf: SystemdBootConf::init(working_dir),
+            inner: SystemdBootConf::init(working_dir),
         }
     }
 
     generate_builder_method!(
         /// Add a systemd-boot loader `Config`.
-        plain INNER(systemd_boot_conf) config(Config)
+        plain INNER(inner) config(Config)
     );
     generate_builder_method!(
         /// Add a list of `Entry`.
-        into INNER(systemd_boot_conf) entries(E: Vec<Entry>)
+        into INNER(inner) entries(E: Vec<Entry>)
     );
 
     /// Add an `Entry`
     pub fn entry(mut self, entry: Entry) -> Self {
-        self.systemd_boot_conf.entries.push(entry);
+        self.inner.entries.push(entry);
 
         self
     }
 
     /// Build the `SystemdBootConf`.
     pub fn build(self) -> SystemdBootConf {
-        self.systemd_boot_conf
+        self.inner
     }
 }

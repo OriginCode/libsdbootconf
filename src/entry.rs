@@ -201,49 +201,49 @@ impl Entry {
 /// Builder for `Entry`.
 #[derive(Default, Debug)]
 pub struct EntryBuilder {
-    entry: Entry,
+    inner: Entry,
 }
 
 impl EntryBuilder {
-    /// Build an empty `EntryBuilder` with an entry id.
+    /// Build an empty `EntryBuilder` with an inner id.
     pub fn new<S: Into<String>>(id: S) -> Self {
         Self {
-            entry: Entry::new(id, Vec::new()),
+            inner: Entry::new(id, Vec::new()),
         }
     }
 
     generate_builder_method!(
-        /// Add a `Title` to the entry.
-        token Token::Title INNER(entry) title(S: String)
+        /// Add a `Title` to the inner.
+        token Token::Title INNER(inner) title(S: String)
     );
     generate_builder_method!(
-        /// Add a `Version` to the entry.
-        token Token::Version INNER(entry) version(S: String)
+        /// Add a `Version` to the inner.
+        token Token::Version INNER(inner) version(S: String)
     );
     generate_builder_method!(
-        /// Add a `MachineID` to the entry.
-        token Token::MachineID INNER(entry) machine_id(S: String)
+        /// Add a `MachineID` to the inner.
+        token Token::MachineID INNER(inner) machine_id(S: String)
     );
     generate_builder_method!(
-        /// Add an `Efi` to the entry.
-        token Token::Efi INNER(entry) efi(P: PathBuf)
+        /// Add an `Efi` to the inner.
+        token Token::Efi INNER(inner) efi(P: PathBuf)
     );
     generate_builder_method!(
-        /// Add an `Options` to the entry.
-        token Token::Options INNER(entry) options(S: String)
+        /// Add an `Options` to the inner.
+        token Token::Options INNER(inner) options(S: String)
     );
     generate_builder_method!(
-        /// Add a `Linux` to the entry.
-        token Token::Linux INNER(entry) linux(P: PathBuf)
+        /// Add a `Linux` to the inner.
+        token Token::Linux INNER(inner) linux(P: PathBuf)
     );
     generate_builder_method!(
-        /// Add an `Initrd` to the entry.
-        token Token::Initrd INNER(entry) initrd(P: PathBuf)
+        /// Add an `Initrd` to the inner.
+        token Token::Initrd INNER(inner) initrd(P: PathBuf)
     );
 
     /// Build the `Entry`.
     pub fn build(self) -> Entry {
-        self.entry
+        self.inner
     }
 }
 
