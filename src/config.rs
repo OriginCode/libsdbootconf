@@ -142,10 +142,9 @@ impl Config {
     /// ```
     pub fn set_default(&mut self, default: &Entry) {
         self.default = Some(
-            default.id.to_string()
+            default.id.clone()
                 + default
                     .id
-                    .to_string()
                     .ends_with(".conf")
                     .not()
                     .then(|| ".conf")

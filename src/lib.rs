@@ -122,7 +122,7 @@ impl SystemdBootConf {
     where
         P: Into<PathBuf>,
         C: Into<Config>,
-        E: Into<Vec<Entry>>, 
+        E: Into<Vec<Entry>>,
     {
         Self {
             working_dir: working_dir.into(),
@@ -208,7 +208,7 @@ impl SystemdBootConf {
     /// ```
     pub fn write_config(&self) -> Result<(), LibSDBootConfError> {
         self.config.write(self.working_dir.join("loader.conf"))?;
-        
+
         Ok(())
     }
 
@@ -234,7 +234,7 @@ impl SystemdBootConf {
 
         Ok(())
     }
- 
+
     /// Write all configurations and entries to the system.
     ///
     /// # Examples
