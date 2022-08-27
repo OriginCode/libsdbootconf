@@ -30,7 +30,7 @@ use std::{
 use crate::{generate_builder_method, LibSDBootConfError};
 
 /// Possible fields of an `Entry`.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Token {
     /// Text to show in the menu.
     Title(String),
@@ -84,7 +84,7 @@ impl ToString for Token {
 }
 
 /// A boot menu entry.
-#[derive(Default, Debug)]
+#[derive(Default, Debug, PartialEq)]
 pub struct Entry {
     /// The ID of the `Entry`, used in the filename of the entry and the `default` field in a
     /// `Config`.

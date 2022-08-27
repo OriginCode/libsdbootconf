@@ -22,7 +22,7 @@ use std::{fs, ops::Not, path::Path, str::FromStr};
 use crate::{generate_builder_method, Entry, LibSDBootConfError};
 
 /// A systemd-boot loader configuration.
-#[derive(Default, Debug)]
+#[derive(Default, Debug, PartialEq)]
 pub struct Config {
     /// Pattern to select the default entry in the list of entries.
     pub default: Option<String>,
@@ -150,6 +150,29 @@ impl Config {
                     .then(|| ".conf")
                     .unwrap_or_default(),
         );
+    }
+
+    /// Try to load the default entry as an Entry object.
+    ///
+    /// Returns `None` if the config does not contain a `default` field.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use libsdbootconf::{Config, Entry};
+    ///
+    /// let config = Config::new(Some("5.12.0-aosc-main.conf"), Some(5u32));
+    ///
+    /// assert_ne!(None, config.default_entry("/efi/loader/entries/").unwrap())
+    /// ```
+    pub fn default_entry<P: AsRef<Path>>(
+        &self,
+        directory: P,
+    ) -> Result<Option<Entry>, LibSDBootConfError> {
+        self.default
+            .as_ref()
+            .map(|default| Entry::load(directory.as_ref().join(default)))
+            .transpose()
     }
 }
 
