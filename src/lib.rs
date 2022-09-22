@@ -112,9 +112,9 @@ impl SystemdBootConf {
     /// # Examples
     ///
     /// ```
-    /// use libsdbootconf::SystemdBootConf;
+    /// use libsdbootconf::{Config, SystemdBootConf};
     ///
-    /// let systemd_boot_conf = SystemdBootConf::init("/efi/loader");
+    /// let systemd_boot_conf = SystemdBootConf::new("/efi/loader", Config::default(), Vec::new());
     ///
     /// assert_eq!(systemd_boot_conf.working_dir, std::path::PathBuf::from("/efi/loader"));
     /// ```
