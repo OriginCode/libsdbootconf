@@ -147,7 +147,7 @@ impl Config {
                     .id
                     .ends_with(".conf")
                     .not()
-                    .then(|| ".conf")
+                    .then_some(".conf")
                     .unwrap_or_default(),
         );
     }
